@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
+import TrajectoryPage from './TrajectoryPage.jsx'
 
 export default function App() {
   const [username, setUsername] = useState('printer')
   const [password, setPassword] = useState('print123456')
   const [token, setToken] = useState(localStorage.getItem('print_token') || '')
   const [role, setRole] = useState(localStorage.getItem('print_role') || '')
+  const [page, setPage] = useState('jobs')
   const [rows, setRows] = useState([])
   const [sheet, setSheet] = useState('插页-02')
   const [cyan, setCyan] = useState('0.08')
@@ -83,33 +85,45 @@ export default function App() {
 
   return (
     <main>
-      <h1>印刷套准复核台</h1>
-      <button onClick={leave}>退出</button>
-      {role === 'writer' && (
-        <p>
-          <input value={sheet} onChange={(e) => setSheet(e.target.value)} />
-          <input value={cyan} onChange={(e) => setCyan(e.target.value)} />
-          <input value={magenta} onChange={(e) => setMagenta(e.target.value)} />
-          <button onClick={send}>送复核</button>
-        </p>
+      <header style={{ display: 'flex', gap: 12, alignItems: 'center', borderBottom: '1px solid #ccc', paddingBottom: 8 }}>
+        <h1 style={{ margin: 0, fontSize: 20 }}>印刷套准复核台</h1>
+        <button onClick={() => setPage('jobs')} style={{ fontWeight: page === 'jobs' ? 700 : 400 }}>复核总表</button>
+        <button onClick={() => setPage('trajectory')} style={{ fontWeight: page === 'trajectory' ? 700 : 400 }}>色差轨迹</button>
+        <span style={{ marginLeft: 'auto' }} />
+        <button onClick={leave}>退出</button>
+      </header>
+
+      {page === 'trajectory' ? (
+        <TrajectoryPage token={token} role={role} />
+      ) : (
+        <section>
+          {role === 'writer' && (
+            <p>
+              <input value={sheet} onChange={(e) => setSheet(e.target.value)} />
+              <input value={cyan} onChange={(e) => setCyan(e.target.value)} />
+              <input value={magenta} onChange={(e) => setMagenta(e.target.value)} />
+              <button onClick={send}>送复核</button>
+            </p>
+          )}
+          {error && <p>{error}</p>}
+          <table>
+            <thead>
+              <tr><th>印张</th><th>青</th><th>品</th><th>状态</th><th>结论</th></tr>
+            </thead>
+            <tbody>
+              {rows.map((row) => (
+                <tr key={row.id}>
+                  <td>{row.sheet}</td>
+                  <td>{row.cyan_mm}</td>
+                  <td>{row.magenta_mm}</td>
+                  <td>{row.status}</td>
+                  <td>{row.verdict || '等待'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
       )}
-      {error && <p>{error}</p>}
-      <table>
-        <thead>
-          <tr><th>印张</th><th>青</th><th>品</th><th>状态</th><th>结论</th></tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr key={row.id}>
-              <td>{row.sheet}</td>
-              <td>{row.cyan_mm}</td>
-              <td>{row.magenta_mm}</td>
-              <td>{row.status}</td>
-              <td>{row.verdict || '等待'}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
     </main>
   )
 }

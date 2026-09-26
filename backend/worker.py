@@ -35,6 +35,19 @@ def ensure():
                 created_at timestamptz NOT NULL
             )"""
         )
+        conn.execute(
+            """CREATE TABLE IF NOT EXISTS trajectory_snapshots (
+                id serial PRIMARY KEY,
+                reference_id integer,
+                reference_sheet text NOT NULL DEFAULT '',
+                point_count integer NOT NULL,
+                points jsonb NOT NULL,
+                reference_point jsonb,
+                deltas jsonb,
+                issued_by text NOT NULL,
+                issued_at timestamptz NOT NULL
+            )"""
+        )
         conn.commit()
 
 
